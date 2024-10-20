@@ -26,8 +26,15 @@ namespace ConsoleApp1
         float length;
         Difficulty difficulty;
 
-        List<Lift> slopeToLifts;
-        List<Slope> slopeToSlope;
+        public List<Lift> slopeToLifts;
+        public List<Slope> slopeToSlope;
+
+        public int Id { get => id; }
+        public string Zone { get => zone;}
+        public float Bottom_altitude { get => bottom_altitude;}
+        public float Top_altitude { get => top_altitude;}
+        public float Length { get => length; }
+        internal Difficulty DifficultyColor { get => difficulty;}
 
         public Slope(int id, string zone, float bottom_altitude, float top_altitude, float length, Difficulty difficulty)
         {
@@ -60,6 +67,36 @@ namespace ConsoleApp1
         public override string ToString()
         {
             return "Slope:{ " + id.ToString() + " " + zone + " " + bottom_altitude.ToString() + " " + top_altitude.ToString() + " " + length.ToString() + " " + difficulty.ToString() + " }";
+        }
+
+        public string GetLiftsStr(int depth)
+        {
+            string depthString = "";
+            for (int i = 0; i < depth; i++)
+            {
+                depthString += "  ";
+            }
+            string result = "";
+            foreach (Lift slope in slopeToLifts)
+            {
+                result += depthString + slope.ToString() + "\n";
+            }
+            return result;
+        }
+
+        public string GetSlopesStr(int depth)
+        {
+            string depthString = "";
+            for (int i = 0; i < depth; i++)
+            {
+                depthString += "  ";
+            }
+            string result = "";
+            foreach (Slope slope in slopeToSlope)
+            {
+                result += depthString + slope.ToString() + "\n";
+            }
+            return result;
         }
     }
 }
