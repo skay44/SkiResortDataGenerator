@@ -16,6 +16,10 @@ namespace ConsoleApp1
             this.from = from;
             this.to = to;
         }
+
+        public int From { get { return from; } }
+        public int To { get { return to; } }
+
         public override string ToString()
         {
             return "LiftToSlope:{ " + from + " " + to + "}";

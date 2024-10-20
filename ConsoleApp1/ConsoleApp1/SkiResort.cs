@@ -15,6 +15,9 @@ namespace ConsoleApp1
         List<SlopeToLift> slopeToLifts;
         List<SlopeToSlope> slopeToSlopes;
 
+        List<Village> villages;
+        List<Skier> skiers;
+
         public SkiResort()
         {
             lifts = new List<Lift>();
@@ -22,6 +25,92 @@ namespace ConsoleApp1
             liftToSlopes = new List<LiftToSlope>();
             slopeToSlopes = new List<SlopeToSlope>();
             slopeToLifts = new List<SlopeToLift>();
+            villages = new List<Village>();
+            skiers = new List<Skier>();
+        }
+
+        public void ApplyConnections()
+        {
+            foreach(LiftToSlope LTS in liftToSlopes)
+            {
+                int liftID = LTS.From;
+                int slopeID = LTS.To;
+                Lift from = null;
+                Slope to = null;
+                foreach(Lift l in lifts)
+                {
+                    if(l.Id == liftID)
+                    {
+                        from = l;
+                        break;
+                    }
+                }
+                foreach (Slope s in slopes)
+                {
+                    if(s.Id == slopeID)
+                    {
+                        to = s;
+                        break;
+                    }
+                }
+                if(from != null && to != null)
+                {
+                    from.liftToSlopes.Add(to);
+                }
+            }
+            foreach(SlopeToLift STL in slopeToLifts)
+            {
+                int slopeID = STL.From; 
+                int liftID = STL.To;
+                Slope from = null;
+                Lift to = null;
+                foreach (Slope s in slopes)
+                {
+                    if (s.Id == slopeID)
+                    {
+                        from = s;
+                        break;
+                    }
+                }
+                foreach (Lift l in lifts)
+                {
+                    if (l.Id == liftID)
+                    {
+                        to = l;
+                        break;
+                    }
+                }
+                if (from != null && to != null)
+                {
+                    from.slopeToLifts.Add(to);
+                }
+            }
+            foreach(SlopeToSlope STS in slopeToSlopes)
+            {
+                int slopeFrom = STS.From;
+                int slopeTo = STS.To;
+                Slope from = null;
+                Slope to = null;
+                foreach(Slope s in slopes)
+                {
+                    if(s.Id == slopeFrom)
+                    {
+                        from = s;
+                    }
+                    if(s.Id == slopeTo)
+                    {
+                        to = s;
+                    }
+                    if(from != null && to != null)
+                    {
+                        break;
+                    }
+                }
+                if (from != null && to != null)
+                {
+                    from.slopeToSlope.Add(to);
+                }
+            }
         }
 
         public void AddLift(Lift liftToAdd)
@@ -55,12 +144,66 @@ namespace ConsoleApp1
                 Console.Write("  ");
         }
 
+        public void addVillage(VillageData data)
+        {
+            Lift[] villageLifts = new Lift[data.liftIDs.Length];
+            int liter = 0;
+            Slope[] villageSlopes = new Slope[data.slopeIDs.Length];
+            int siter = 0;
+            foreach(int LID in data.liftIDs)
+            {
+                foreach(Lift lift in lifts)
+                {
+                    if (lift.Id == LID)
+                    {
+                        villageLifts[liter] = lift;
+                        liter++;
+                    }
+                }
+            }
+            foreach(int SID in data.slopeIDs)
+            {
+                foreach (Slope slope in slopes)
+                {
+                    if(slope.Id == SID)
+                    {
+                        villageSlopes[siter] = slope;
+                        siter++;
+                    }
+                }
+            }
+            if(data.liftIDs.Length != liter || data.slopeIDs.Length != siter)
+            {
+                throw new Exception("nie wczytano wszystkich danych do zaalokowanej pamięci wioski");
+            }
+            Village newVillage = new Village(villageLifts, villageSlopes, data.pupularity, data.villageName);
+            villages.Add(newVillage);
+        }
+
+        public void WriteAllVillages(int depth)
+        {
+            foreach (var village in villages)
+            {
+                addDepth(depth);
+                Console.WriteLine(village);
+                Console.Write(village.GetLiftStr(depth + 1));
+                Console.Write(village.GetSlopeStr(depth + 1));
+            }
+        }
+
+        public void WriteAllVillages()
+        {
+            WriteAllVillages(0);
+        }
+
         public void WriteAllLifts(int depth)
         {
             foreach (var lift in lifts) {
                 addDepth(depth);
                 Console.WriteLine(lift);
+                Console.Write(lift.GetSlopesStr(depth+1));
             }
+            
         }
 
         public void WriteAllLifts()
@@ -74,6 +217,8 @@ namespace ConsoleApp1
             {
                 addDepth(depth);
                 Console.WriteLine(slope);
+                Console.Write(slope.GetLiftsStr(depth + 1));
+                Console.Write(slope.GetSlopesStr(depth + 1));
             }
         }
 
@@ -118,6 +263,7 @@ namespace ConsoleApp1
                 Console.WriteLine(slopeToSlope);
             }
         }
+
         public void WriteAllSlopeToSlopes()
         {
             WriteAllSlopeToSlopes(0);
@@ -140,6 +286,28 @@ namespace ConsoleApp1
             addDepth(depth);
             Console.WriteLine("Slope to Slope: ");
             WriteAllSlopeToSlopes(depth + 1);
+            Console.WriteLine("Villages: ");
+            WriteAllVillages(depth + 1);
+        }
+
+
+        void spawnNewSkiers(float delta)
+        {
+            if(skiers.Count == 0)
+            {
+                Skier s = new Skier(villages[0], 1000);
+
+                skiers.Add(s);
+            }
+        }
+
+        public void tick(float delta)
+        {
+            spawnNewSkiers(delta);
+            foreach(Skier skier in skiers)
+            {
+                skier.tick(delta);
+            }
         }
 
         public void WriteAllData()

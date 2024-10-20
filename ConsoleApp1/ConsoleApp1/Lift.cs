@@ -24,11 +24,22 @@ namespace ConsoleApp1
         Lift.LiftType liftType;
         float length;
         float rideTime;
-        int throughput;
+        public int throughput;
         TimeSpan openingTime;
         TimeSpan closingTime;
 
-        List<Slope> liftToSlopes;
+        public int currentUsers;
+
+        public List<Slope> liftToSlopes;
+        public Queue<Skier> liftQueue;
+
+        public int Id { get => id; }
+        public float Length { get => length; }
+        public float RideTime { get => rideTime; }
+        public string Zone { get => zone;  }
+        public float Bottom_altitude { get => bottom_altitude; }
+        public float Top_altitude { get => top_altitude; }
+        internal LiftType LiftType1 { get => liftType; }
 
         public Lift(int id, string zone, float bottom_altitude, float top_altitude, LiftType liftType, float length, float rideTime, int throughput, TimeSpan openingTime, TimeSpan closingTime)
         {
@@ -42,6 +53,8 @@ namespace ConsoleApp1
             this.throughput = throughput;
             this.openingTime = openingTime;
             this.closingTime = closingTime;
+
+            currentUsers = 0;
 
             liftToSlopes = new List<Slope>();
         }
@@ -62,7 +75,22 @@ namespace ConsoleApp1
 
         public override string ToString()
         {
-            return "Lift:{ " + id.ToString() + " " + zone + " " + bottom_altitude.ToString() + " " + top_altitude.ToString() + " " + liftType.ToString() + " " + length.ToString() + " " + rideTime.ToString() + " " + throughput.ToString() + " " + openingTime.ToString() + " " + closingTime.ToString() + " }";
+            return "Lift:{ " + Id.ToString() + " " + Zone + " " + Bottom_altitude.ToString() + " " + Top_altitude.ToString() + " " + LiftType1.ToString() + " " + Length.ToString() + " " + RideTime.ToString() + " " + throughput.ToString() + " " + openingTime.ToString() + " " + closingTime.ToString() + " }";
+        }
+
+        public string GetSlopesStr(int depth)
+        {
+            string depthString = "";
+            for(int i = 0; i < depth; i++)
+            {
+                depthString += "  ";
+            }
+            string result = "";
+            foreach(Slope slope in liftToSlopes)
+            {
+                result += depthString + slope.ToString() + "\n";
+            }
+            return result;
         }
     }
 }

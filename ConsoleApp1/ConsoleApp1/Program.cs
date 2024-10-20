@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Data.SqlClient;
+using System.Xml.Serialization;
 
 namespace ConsoleApp1
 {
@@ -110,21 +111,65 @@ namespace ConsoleApp1
             }
             myConn.Close();
         }
+        
+        static void AddVillages(SkiResort resort)
+        {
+            VillageData[] vData = new VillageData[4];
+            vData[0].pupularity = 10;
+            vData[0].liftIDs = new int[] { 1, 2 };
+            vData[0].slopeIDs = new int[] { 1, 3 };
+            vData[0].villageName = "Village A";
+
+            vData[1].pupularity = 25;
+            vData[1].liftIDs = new int[] { 7, 8 };
+            vData[1].slopeIDs = new int[] { 13, 15 };
+            vData[1].villageName = "Village B";
+
+            vData[2].pupularity = 20;
+            vData[2].liftIDs = new int[] { 13, 14 };
+            vData[2].slopeIDs = new int[] { 24, 47 };
+            vData[2].villageName = "Village C";
+
+            vData[3].pupularity = 10;
+            vData[3].liftIDs = new int[] { 23, 25, 26 };
+            vData[3].slopeIDs = new int[] { 38, 41, 45 };
+            vData[3].villageName = "Village D";
+
+            resort.addVillage(vData[0]);
+            resort.addVillage(vData[1]);
+            resort.addVillage(vData[2]);
+            resort.addVillage(vData[3]);
+        }
+
+        static void Simulate(int seasons, SkiResort resort, float tickLength)
+        {
+            for(int i = 0; i < 480; i++)
+            {
+                resort.tick(tickLength);
+            }
+        }
 
         static void Main(string[] args)
         {
             SkiResort skissueSkiResort;
             skissueSkiResort = new SkiResort();
             SqlConnection myConn = new SqlConnection("Server=DESKTOP-A2OQMJO;Integrated security=SSPI;database=wyciagi_stoki");
-
+            
             ReadLifts(myConn, skissueSkiResort);
             ReadSlopes(myConn, skissueSkiResort);
             ReadLiftToSlope(myConn, skissueSkiResort);
             ReadSlopeToLift(myConn, skissueSkiResort);
             ReadSlopeToSlope(myConn, skissueSkiResort);
 
+            skissueSkiResort.ApplyConnections();
 
-            skissueSkiResort.WriteAllData();
+            AddVillages(skissueSkiResort);
+
+            Simulate(1, skissueSkiResort, 60);
+
+            //skissueSkiResort.WriteAllLifts();
+            //skissueSkiResort.WriteAllSlopes();
+            //skissueSkiResort.WriteAllVillages();
 
             Console.ReadLine();
         }
