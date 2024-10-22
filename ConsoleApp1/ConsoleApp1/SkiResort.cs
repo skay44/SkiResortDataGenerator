@@ -109,6 +109,7 @@ namespace ConsoleApp1
                 if (from != null && to != null)
                 {
                     from.slopeToSlope.Add(to);
+                    from.slopeToSlopeAltitude.Add(STS.Altitude);
                 }
             }
         }
