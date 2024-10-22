@@ -17,6 +17,8 @@ namespace ConsoleApp1
 
         List<Village> villages;
         List<Skier> skiers;
+        Random random;
+        DateTime currentTime;
 
         public SkiResort()
         {
@@ -27,8 +29,11 @@ namespace ConsoleApp1
             slopeToLifts = new List<SlopeToLift>();
             villages = new List<Village>();
             skiers = new List<Skier>();
+            random = new Random();
+            currentTime = new DateTime(2017, 11, 15, 7, 0, 0);
         }
 
+        public DateTime CurrentTime { get => currentTime; }
         public void ApplyConnections()
         {
             foreach(LiftToSlope LTS in liftToSlopes)
@@ -116,6 +121,7 @@ namespace ConsoleApp1
 
         public void AddLift(Lift liftToAdd)
         {
+            liftToAdd.Resort = this;
             lifts.Add(liftToAdd);
         }
 
@@ -292,23 +298,27 @@ namespace ConsoleApp1
         }
 
 
-        void spawnNewSkiers(float delta)
+        public void spawnNewSkiers(float delta)
         {
-            if(skiers.Count == 0)
+            for (int i = 0; i < delta; i++)
             {
-                Skier s = new Skier(villages[0], 1000);
-
+                Skier s = new Skier(villages[random.Next(0, 4)], 1000, random, i);
                 skiers.Add(s);
             }
         }
 
         public void tick(float delta)
         {
-            spawnNewSkiers(delta);
+            
             foreach(Skier skier in skiers)
             {
                 skier.tick(delta);
             }
+            foreach(Lift lift in lifts)
+            {
+                lift.LiftTick(delta);
+            }
+            currentTime = currentTime.AddSeconds(delta);
         }
 
         public void WriteAllData()

@@ -29,12 +29,14 @@ namespace ConsoleApp1
         Lift currentLift;
         Village currenVillage;
         float height;
-        State state;
+        public State state;
         Random rnd;
         Slope nextSlope;
         Lift nextLift;
         float NextAltitude;
+        int id;
 
+        public int Id { get => id; }
         internal Slope CurrentSlope { get => currentSlope; set { 
                 currentSlope = value;
                 currentLift = null;
@@ -70,12 +72,13 @@ namespace ConsoleApp1
             }
         }
 
-        public Skier(Village village, float height)
+        public Skier(Village village, float height, Random rand, int id)
         {
             this.CurrentVillage = village;
             this.height = height;
             this.state = State.idle;
-            rnd = new Random();
+            rnd = rand;
+            this.id = id;
         }
 
         void tryGettingOnTheLift(Lift lift)
@@ -105,7 +108,7 @@ namespace ConsoleApp1
             //this.state = State.skiing;
         }
 
-        void chooseFromSlopes(List<Slope> slopes) //for lifts
+        public void chooseFromSlopes(List<Slope> slopes) //for lifts
         {
             int options = slopes.Count;
             int random = rnd.Next(options);
@@ -175,9 +178,11 @@ namespace ConsoleApp1
                 //chooseFromSlopesAndLifts(CurrentSlope.slopeToSlope, CurrentSlope.slopeToLifts);
                 if (NextLift != null)
                 {
-                    CurrentLift = NextLift;
-                    chooseFromSlopes(CurrentLift.liftToSlopes);
-                    state = State.ascending;
+                    NextLift.liftQueue.Enqueue(this);
+                    state = State.waiting;
+                    //CurrentLift = NextLift;
+                    //chooseFromSlopes(CurrentLift.liftToSlopes);
+                    //state = State.ascending;
                 }
                 else if (NextSlope != null)
                 {
@@ -255,7 +260,7 @@ namespace ConsoleApp1
 
         public void tick(float delta)
         {
-            Console.WriteLine(getSkierData());
+            //Console.WriteLine(getSkierData());
             switch (state)
             {
                 case State.skiing:

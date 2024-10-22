@@ -144,7 +144,9 @@ namespace ConsoleApp1
 
         static void Simulate(int seasons, SkiResort resort, float tickLength)
         {
-            for(int i = 0; i < 480; i++)
+            resort.spawnNewSkiers(new Random().Next(1000, 5001));
+
+            for (int i = 0; i < 480; i++)
             {
                 resort.tick(tickLength);
             }
