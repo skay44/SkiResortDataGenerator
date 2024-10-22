@@ -31,6 +31,9 @@ namespace ConsoleApp1
         float height;
         State state;
         Random rnd;
+        Slope nextSlope;
+        Lift nextLift;
+        float NextAltitude;
 
         internal Slope CurrentSlope { get => currentSlope; set { 
                 currentSlope = value;
@@ -49,6 +52,22 @@ namespace ConsoleApp1
                 currentSlope = null;
                 currentLift = null;
             } 
+        }
+        internal Slope NextSlope
+        {
+            get => nextSlope; set
+            {
+                nextSlope = value;
+                nextLift = null;
+            }
+        }
+        internal Lift NextLift
+        {
+            get => nextLift; set
+            {
+                nextLift = value;
+                nextSlope = null;
+            }
         }
 
         public Skier(Village village, float height)
@@ -73,37 +92,68 @@ namespace ConsoleApp1
             int options = village.lifts.Length;
             int random = rnd.Next(options);
             CurrentLift = village.lifts[random];
+            chooseFromSlopes(CurrentLift.liftToSlopes);
             tryGettingOnTheLift(CurrentLift);
         }
 
-        void chooseFromSlopes(List<Slope> slopes)
+        void chooseFromSlopes(List<Slope> slopes, List<float> altitude) //for slopes
         {
             int options = slopes.Count;
             int random = rnd.Next(options);
-            CurrentSlope = slopes[random];
-            this.state = State.skiing;
+            NextSlope = slopes[random];
+            NextAltitude = altitude[random];
+            //this.state = State.skiing;
         }
 
+        void chooseFromSlopes(List<Slope> slopes) //for lifts
+        {
+            int options = slopes.Count;
+            int random = rnd.Next(options);
+            NextSlope = slopes[random];
+            //this.state = State.skiing;
+        }
+
+        //TODO change currents to nexts
         void chooseFromLifts(List<Lift> lifts)
         {
             int options = lifts.Count;
             int random = rnd.Next(options);
-            CurrentLift = lifts[random];
-            this.state = State.ascending;
+            NextLift = lifts[random];
+            NextAltitude = NextLift.Bottom_altitude;
+            //this.state = State.ascending;
         }
 
-        void chooseFromSlopesAndLifts(List<Slope> slopes, List<Lift> lifts)
+        //TODO change currents to nexts
+        void chooseFromSlopesAndLifts(List<Slope> slopes, List<Lift> lifts, List<float> altitudes)
         {
-            int optionA = slopes.Count;
-            int optionB = optionA + lifts.Count;
+            List<Slope> tmpSlopes = new List<Slope>();
+            List<float> tmpAltitudes = new List<float>();
+            for (int i = 0; i < slopes.Count; i++)
+            {
+                if (altitudes[i] < height)
+                {
+                    tmpSlopes.Add(slopes[i]);
+                    tmpAltitudes.Add(altitudes[i]);
+                }
+            }
+            List<Lift> tmpLifts = new List<Lift>();
+            for (int i = 0; i < lifts.Count; i++)
+            {
+                if (lifts[i].Bottom_altitude < height)
+                {
+                    tmpLifts.Add(lifts[i]);
+                }
+            }
+            int optionA = tmpSlopes.Count;
+            int optionB = optionA + tmpLifts.Count;
             int random = rnd.Next(optionB);
             if(random < optionA)
             {
-                chooseFromSlopes(slopes);
+                chooseFromSlopes(tmpSlopes, tmpAltitudes);
             }
             else
             {
-                chooseFromLifts(lifts);
+                chooseFromLifts(tmpLifts);
             }
         }
 
@@ -115,11 +165,30 @@ namespace ConsoleApp1
             }
             else if (CurrentLift != null)//na gorze liftu
             {
-                chooseFromSlopes(currentLift.liftToSlopes);
+                //chooseFromSlopes(currentLift.liftToSlopes);
+                CurrentSlope = NextSlope;
+                chooseFromSlopesAndLifts(CurrentSlope.slopeToSlope, CurrentSlope.slopeToLifts, CurrentSlope.slopeToSlopeAltitude);
+                state = State.skiing;
             }
             else if (CurrentSlope != null)//na dole slopeu
             {
-                chooseFromSlopesAndLifts(CurrentSlope.slopeToSlope, CurrentSlope.slopeToLifts);
+                //chooseFromSlopesAndLifts(CurrentSlope.slopeToSlope, CurrentSlope.slopeToLifts);
+                if (NextLift != null)
+                {
+                    CurrentLift = NextLift;
+                    chooseFromSlopes(CurrentLift.liftToSlopes);
+                    state = State.ascending;
+                }
+                else if (NextSlope != null)
+                {
+                    CurrentSlope = NextSlope;
+                    chooseFromSlopesAndLifts(CurrentSlope.slopeToSlope, CurrentSlope.slopeToLifts, CurrentSlope.slopeToSlopeAltitude);
+                    state = State.skiing;
+                }
+                else
+                {
+                    throw new Exception("Error69");
+                }
             }
                 
         }
@@ -153,11 +222,12 @@ namespace ConsoleApp1
             {
                 float slopeSpeed = (CurrentSlope.Top_altitude - CurrentSlope.Bottom_altitude)/CurrentSlope.Length*getSlopeSpeed(CurrentSlope.DifficultyColor);
                 height -= slopeSpeed * delta;
-                if (height <= CurrentSlope.Bottom_altitude)
+                if (height <= NextAltitude)
                 {
-                    height = CurrentSlope.Bottom_altitude;
+                    height = NextAltitude;
                     state = State.idle;
                 }
+                
             }
             else 
             {

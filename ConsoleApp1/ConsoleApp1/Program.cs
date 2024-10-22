@@ -106,8 +106,9 @@ namespace ConsoleApp1
             {
                 int topSlopeId = data.GetInt32(0);
                 int bottomSlopeId = data.GetInt32(1);
-                SlopeToSlope slopeToLift = new SlopeToSlope(topSlopeId, bottomSlopeId);
-                skissueSkiResort.AddSlopeToSlope(slopeToLift);
+                float altitude = (float)data.GetDecimal(2);
+                SlopeToSlope slopeToSlope = new SlopeToSlope(topSlopeId, bottomSlopeId, altitude);
+                skissueSkiResort.AddSlopeToSlope(slopeToSlope);
             }
             myConn.Close();
         }
@@ -153,7 +154,7 @@ namespace ConsoleApp1
         {
             SkiResort skissueSkiResort;
             skissueSkiResort = new SkiResort();
-            SqlConnection myConn = new SqlConnection("Server=DESKTOP-A2OQMJO;Integrated security=SSPI;database=wyciagi_stoki");
+            SqlConnection myConn = new SqlConnection("Server=EPICGAMERPUTER;Integrated security=SSPI;database=wyciagi_stoki");
             
             ReadLifts(myConn, skissueSkiResort);
             ReadSlopes(myConn, skissueSkiResort);

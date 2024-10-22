@@ -28,6 +28,7 @@ namespace ConsoleApp1
 
         public List<Lift> slopeToLifts;
         public List<Slope> slopeToSlope;
+        public List<float> slopeToSlopeAltitude;
 
         public int Id { get => id; }
         public string Zone { get => zone;}
@@ -46,6 +47,7 @@ namespace ConsoleApp1
             this.difficulty = difficulty;
 
             slopeToLifts = new List<Lift>();
+            slopeToSlopeAltitude = new List<float>();
             slopeToSlope = new List<Slope>();
         }
 
