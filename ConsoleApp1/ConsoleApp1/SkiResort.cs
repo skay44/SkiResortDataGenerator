@@ -20,6 +20,8 @@ namespace ConsoleApp1
         Random random;
         DateTime currentTime;
 
+        List<Person> customers;
+
         public SkiResort()
         {
             lifts = new List<Lift>();
@@ -31,9 +33,10 @@ namespace ConsoleApp1
             skiers = new List<Skier>();
             random = new Random();
             currentTime = new DateTime(2017, 11, 15, 7, 0, 0);
+            customers = new List<Person>();
         }
 
-        public DateTime CurrentTime { get => currentTime; }
+        public DateTime CurrentTime { get => currentTime; set => currentTime = value; }
         public void ApplyConnections()
         {
             foreach(LiftToSlope LTS in liftToSlopes)
@@ -297,6 +300,15 @@ namespace ConsoleApp1
             WriteAllVillages(depth + 1);
         }
 
+        public void GenerateCustomers(float delta)
+        {
+            for (int i = 0; i < delta; i++)
+            {
+                Person s = new Person(i, random);
+                customers.Add(s);
+                Console.WriteLine(s.name + " " + s.surname + " from " + s.countryOfOrigin + " was born in " + s.dateOfBirth);
+            }
+        }
 
         public void spawnNewSkiers(float delta)
         {
@@ -305,6 +317,11 @@ namespace ConsoleApp1
                 Skier s = new Skier(villages[random.Next(0, 4)], 1000, random, i);
                 skiers.Add(s);
             }
+        }
+
+        public void ResetSkiers()
+        {
+            skiers.Clear();
         }
 
         public void tick(float delta)

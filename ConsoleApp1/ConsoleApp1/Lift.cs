@@ -83,14 +83,17 @@ namespace ConsoleApp1
 
         public void LiftTick(float delta)
         {
-            int lifters = (int)Math.Ceiling(throughput/3600.0f * delta);
-            for (int i = 0; i < lifters && i < liftQueue.Count(); i++)
+            if (Resort.CurrentTime.TimeOfDay <= closingTime)
             {
-                Skier s = liftQueue.Dequeue();
-                s.CurrentLift = s.NextLift;
-                s.chooseFromSlopes(s.CurrentLift.liftToSlopes);
-                s.state = Skier.State.ascending;
-                Console.WriteLine("Skier no. " + s.Id + " is now using lift no. " + Id + " at time " + Resort.CurrentTime.TimeOfDay);
+                int lifters = (int)Math.Ceiling(throughput / 3600.0f * delta);
+                for (int i = 0; i < lifters && i < liftQueue.Count(); i++)
+                {
+                    Skier s = liftQueue.Dequeue();
+                    s.CurrentLift = s.NextLift;
+                    s.chooseFromSlopes(s.CurrentLift.liftToSlopes);
+                    s.state = Skier.State.ascending;
+                    //Console.WriteLine("Skier no. " + s.Id + " is now using lift no. " + Id + " at time " + Resort.CurrentTime.TimeOfDay);
+                }
             }
         }
 
