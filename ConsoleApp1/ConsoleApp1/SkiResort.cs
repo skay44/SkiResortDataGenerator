@@ -8,7 +8,7 @@ namespace ConsoleApp1
 {
     internal class SkiResort
     {
-        List<Lift> lifts;
+        public List<Lift> lifts;
         List<Slope> slopes;
 
         List<LiftToSlope> liftToSlopes;
@@ -306,7 +306,7 @@ namespace ConsoleApp1
             {
                 Person s = new Person(i, random);
                 customers.Add(s);
-                Console.WriteLine(s.name + " " + s.surname + " from " + s.countryOfOrigin + " was born in " + s.dateOfBirth);
+                //Console.WriteLine(s.name + " " + s.surname + " from " + s.countryOfOrigin + " was born in " + s.dateOfBirth);
             }
         }
 
@@ -407,7 +407,7 @@ namespace ConsoleApp1
                     }
                 }
             }
-            Console.WriteLine("Spawned " + i + " skiers, on day " + currentTime);
+            //Console.WriteLine("Spawned " + i + " skiers, on day " + currentTime);
         }
 
         public void ResetSkiers()

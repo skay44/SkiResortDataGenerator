@@ -103,18 +103,60 @@ namespace ConsoleApp1
 
         void chooseFromSlopes(List<Slope> slopes, List<float> altitude) //for slopes
         {
-            int options = slopes.Count;
-            int random = rnd.Next(options);
-            NextSlope = slopes[random];
-            NextAltitude = altitude[random];
+            double max = 0;
+            foreach (Slope slope in slopes)
+            {
+                max += GetSlopePreference(person.skillLevel, slope.DifficultyColor);
+            }
+
+            int choice = 0;
+            double randomNum = rnd.NextDouble() * max;
+
+            for (int i = 0; i < slopes.Count; i++)
+            {
+                double sum = 0;
+                for (int j = 0; j <= i; j++)
+                {
+                    sum += GetSlopePreference(person.skillLevel, slopes[j].DifficultyColor);
+                }
+                if (randomNum < sum)
+                {
+                    choice = i;
+                    break;
+                }
+            }
+
+            NextSlope = slopes[choice];
+            NextAltitude = altitude[choice];
             //this.state = State.skiing;
         }
 
         public void chooseFromSlopes(List<Slope> slopes) //for lifts
         {
-            int options = slopes.Count;
-            int random = rnd.Next(options);
-            NextSlope = slopes[random];
+            double max = 0;
+            foreach (Slope slope in slopes)
+            {
+                max += GetSlopePreference(person.skillLevel, slope.DifficultyColor);
+            }
+
+            int choice = 0;
+            double randomNum = rnd.NextDouble() * max;
+
+            for (int i = 0; i < slopes.Count; i++)
+            {
+                double sum = 0;
+                for (int j = 0; j <= i; j++)
+                {
+                    sum += GetSlopePreference(person.skillLevel, slopes[j].DifficultyColor);
+                }
+                if (randomNum < sum)
+                {
+                    choice = i;
+                    break;
+                }
+            }
+
+            NextSlope = slopes[choice];
             //this.state = State.skiing;
         }
 
@@ -296,9 +338,27 @@ namespace ConsoleApp1
                 data += "slope: {" + CurrentSlope.Id + "}   ";
             }
             data += height + "m ";
-            data += "[ " + state + " ]";
+            data += "[ " + state + " ]" + " [skill level " + Person.skillLevel + "]";
             return data;
         }
+
+        double GetSlopePreference(int skillLevel, Slope.Difficulty difficulty) 
+        {
+            int diff = 0;
+            if (difficulty == Slope.Difficulty.blue) { diff = 1; }
+            else if (difficulty == Slope.Difficulty.red) { diff = 2; }
+            else if (difficulty == Slope.Difficulty.black) { diff = 3; }
+            else if (difficulty == Slope.Difficulty.doubleBlack) { diff = 4; }
+            return preferences[skillLevel][diff];
+        }
+
+        List<List<double>> preferences = new List<List<double>>()
+        {   new List<double> { 2, 1, 0.25, 0.01, 0.001 }, 
+            new List<double> { 1, 2.5, 1, 0.2, 0.001},
+            new List<double> { 0.1, 1, 2, 0.75, 0.05},
+            new List<double> { 0.001, 0.5, 2, 1.5, 0.75},
+            new List<double> { 0.001, 0.05, 0.5, 1, 5}
+        };
     }
 
 

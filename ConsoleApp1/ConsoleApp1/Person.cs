@@ -14,6 +14,7 @@ namespace ConsoleApp1
         public string countryOfOrigin;
         public DateTime dateOfBirth;
         public List<SkiPass> passList;
+        public int skillLevel;
 
         public Person(int id, Random rand) 
         {
@@ -23,6 +24,25 @@ namespace ConsoleApp1
             countryOfOrigin = countries[rand.Next(0,countries.Count)];
             dateOfBirth = GenerateRandomDate(rand);
             passList = new List<SkiPass>();
+
+            double skill = rand.NextDouble();
+            if (skill <= 0.05)
+            {
+                skillLevel = 0;
+            }
+            else if (skill <= 0.25)
+            {
+                skillLevel = 1;
+            }
+            else if (skill <= 0.75)
+            {
+                skillLevel = 2;
+            }
+            else if (skill <= 0.95)
+            {
+                skillLevel = 3;
+            }
+            else { skillLevel = 4; }
         }
 
         static DateTime GenerateRandomDate(Random rand)

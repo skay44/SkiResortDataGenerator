@@ -165,7 +165,12 @@ namespace ConsoleApp1
                     resort.CurrentTime = resort.CurrentTime.AddHours(13);
                 }
             }
-            Console.WriteLine("done");
+            long count = 0;
+            foreach (Lift lift in resort.lifts)
+            {
+                count += lift.usageCount;
+            }
+            Console.WriteLine("total inserts to usage table: " + count);
         }
 
         static void Main(string[] args)

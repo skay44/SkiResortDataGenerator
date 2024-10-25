@@ -33,6 +33,7 @@ namespace ConsoleApp1
 
         public List<Slope> liftToSlopes;
         public Queue<Skier> liftQueue;
+        public long usageCount;
 
         public int Id { get => id; }
         public float Length { get => length; }
@@ -60,6 +61,8 @@ namespace ConsoleApp1
 
             liftToSlopes = new List<Slope>();
             liftQueue = new Queue<Skier>();
+
+            usageCount = 0;
         }
 
         public static LiftType GetLiftType(String str)
@@ -92,6 +95,7 @@ namespace ConsoleApp1
                     s.CurrentLift = s.NextLift;
                     s.chooseFromSlopes(s.CurrentLift.liftToSlopes);
                     s.state = Skier.State.ascending;
+                    usageCount++;
                     //Console.WriteLine("Skier no. " + s.Id + " is now using lift no. " + Id + " at time " + Resort.CurrentTime.TimeOfDay);
                 }
             }
