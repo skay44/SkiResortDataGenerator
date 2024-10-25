@@ -144,10 +144,33 @@ namespace ConsoleApp1
 
         static void Simulate(int seasons, SkiResort resort, float tickLength)
         {
-            for(int i = 0; i < 480; i++)
+            Random rand = new Random();
+            resort.GenerateCustomers(rand.Next(20000, 25001));
+            
+            for (int j = 0; j < seasons; j++)
             {
-                resort.tick(tickLength);
+                resort.CurrentTime = new DateTime(2017, 11, 15, 7, 0, 0).AddYears(j);
+                //todo generate skipassed and set date for new opening
+                resort.GeneratePasses(rand.Next(7500, 12500), resort.CurrentTime.Year);
+
+                for (int k = 0; k < 120; k++)
+                {
+                    resort.ResetSkiers();
+                    resort.spawnNewSkiers();
+
+                    for (int i = 0; i < 660; i++)
+                    {
+                        resort.tick(tickLength);
+                    }
+                    resort.CurrentTime = resort.CurrentTime.AddHours(13);
+                }
             }
+            long count = 0;
+            foreach (Lift lift in resort.lifts)
+            {
+                count += lift.usageCount;
+            }
+            Console.WriteLine("total inserts to usage table: " + count);
         }
 
         static void Main(string[] args)
@@ -166,7 +189,7 @@ namespace ConsoleApp1
 
             AddVillages(skissueSkiResort);
 
-            Simulate(1, skissueSkiResort, 60);
+            Simulate(5, skissueSkiResort, 60);
 
             //skissueSkiResort.WriteAllLifts();
             //skissueSkiResort.WriteAllSlopes();

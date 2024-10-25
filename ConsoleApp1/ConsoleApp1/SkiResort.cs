@@ -8,7 +8,7 @@ namespace ConsoleApp1
 {
     internal class SkiResort
     {
-        List<Lift> lifts;
+        public List<Lift> lifts;
         List<Slope> slopes;
 
         List<LiftToSlope> liftToSlopes;
@@ -17,6 +17,10 @@ namespace ConsoleApp1
 
         List<Village> villages;
         List<Skier> skiers;
+        Random random;
+        DateTime currentTime;
+
+        List<Person> customers;
 
         public SkiResort()
         {
@@ -27,8 +31,12 @@ namespace ConsoleApp1
             slopeToLifts = new List<SlopeToLift>();
             villages = new List<Village>();
             skiers = new List<Skier>();
+            random = new Random();
+            currentTime = new DateTime(2017, 11, 15, 7, 0, 0);
+            customers = new List<Person>();
         }
 
+        public DateTime CurrentTime { get => currentTime; set => currentTime = value; }
         public void ApplyConnections()
         {
             foreach(LiftToSlope LTS in liftToSlopes)
@@ -116,6 +124,7 @@ namespace ConsoleApp1
 
         public void AddLift(Lift liftToAdd)
         {
+            liftToAdd.Resort = this;
             lifts.Add(liftToAdd);
         }
 
@@ -291,24 +300,133 @@ namespace ConsoleApp1
             WriteAllVillages(depth + 1);
         }
 
-
-        void spawnNewSkiers(float delta)
+        public void GenerateCustomers(float delta)
         {
-            if(skiers.Count == 0)
+            for (int i = 0; i < delta; i++)
             {
-                Skier s = new Skier(villages[0], 1000);
-
-                skiers.Add(s);
+                Person s = new Person(i, random);
+                customers.Add(s);
+                //Console.WriteLine(s.name + " " + s.surname + " from " + s.countryOfOrigin + " was born in " + s.dateOfBirth);
             }
+        }
+
+        public void GeneratePasses(float number, int year)
+        {
+            for (int i = 0; i < number; i++)
+            {
+                int duration = GenerateDuration();
+                DateTime startDate = new DateTime(year, 11, 15).AddDays(random.Next(0, 120 - duration + 1));
+                
+                int zones = GenerateZones();
+                SkiPass s = new SkiPass(i, startDate, zones, duration);
+
+                bool valid = false;
+                while(!valid)
+                {
+                    int r = random.Next(0, customers.Count);
+                    bool b = true;
+                    foreach(SkiPass pass in customers[r].passList)
+                    {
+                        if ((pass.dateOfIssue >= s.dateOfIssue && pass.dateOfIssue <= s.expirationDate) || (pass.expirationDate >= s.dateOfIssue && pass.expirationDate <= s.expirationDate))
+                        {
+                            b = false;
+                        }
+                    }
+                    if (b == true)
+                    {
+                        customers[r].passList.Add(s);
+                        valid = true;
+                    }
+                }
+            }
+        }
+
+        public int GenerateDuration()
+        {
+            int duration = 120;
+            double randomNum = random.NextDouble();
+            List<double> chances = new List<double>() {0.02,  0.02, 0.29, 0.25, 0.18, 0.1, 0.09, 0.02, 0.03};
+            List<int> durations = new List<int>() {1, 2, 5, 7, 10, 14, 30, 60, 120 };
+
+            for (int i = 0; i < chances.Count; i++)
+            {
+                double sum = 0;
+                for (int j = 0; j <= i; j++)
+                {
+                    sum += chances[j];
+                }
+                if (randomNum < sum)
+                {
+                    duration = durations[i];
+                    break;
+                }
+            }
+
+            return duration;
+        }
+
+        public int GenerateZones()
+        {
+            int duration = 120;
+            double randomNum = random.NextDouble();
+            List<double> chances = new List<double>() { 0.05, 0.05, 0.05, 0.07, 0.13, 0.15, 0.5 };
+            List<int> durations = new List<int>() { 1, 2, 4, 8, 3, 12, 15 };
+
+            for (int i = 0; i < chances.Count; i++)
+            {
+                double sum = 0;
+                for (int j = 0; j <= i; j++)
+                {
+                    sum += chances[j];
+                }
+                if (randomNum < sum)
+                {
+                    duration = durations[i];
+                    break;
+                }
+            }
+
+            return duration;
+        }
+
+        public void spawnNewSkiers()
+        {
+            int i = 0;
+            foreach (Person customer in customers)
+            {
+                foreach (SkiPass skiPass in customer.passList)
+                {
+                    if (skiPass.dateOfIssue <= currentTime && skiPass.expirationDate >= currentTime)
+                    {
+                        Skier s = new Skier(villages[random.Next(0, 4)], 1000, random);
+                        s.Person = customer;
+                        s.Pass = skiPass;
+                        skiers.Add(s);
+                        i++;
+                        break;
+                    }
+                }
+            }
+            //Console.WriteLine("Spawned " + i + " skiers, on day " + currentTime);
+        }
+
+        public void ResetSkiers()
+        {
+            skiers.Clear();
         }
 
         public void tick(float delta)
         {
-            spawnNewSkiers(delta);
+            
             foreach(Skier skier in skiers)
             {
                 skier.tick(delta);
             }
+            foreach(Lift lift in lifts)
+            {
+                lift.LiftTick(delta);
+            }
+            currentTime = currentTime.AddSeconds(delta);
         }
 
         public void WriteAllData()

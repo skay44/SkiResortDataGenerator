@@ -27,11 +27,13 @@ namespace ConsoleApp1
         public int throughput;
         TimeSpan openingTime;
         TimeSpan closingTime;
+        SkiResort resort;
 
         public int currentUsers;
 
         public List<Slope> liftToSlopes;
         public Queue<Skier> liftQueue;
+        public long usageCount;
 
         public int Id { get => id; }
         public float Length { get => length; }
@@ -40,6 +42,7 @@ namespace ConsoleApp1
         public float Bottom_altitude { get => bottom_altitude; }
         public float Top_altitude { get => top_altitude; }
         internal LiftType LiftType1 { get => liftType; }
+        public SkiResort Resort { get => resort; set => resort = value; }
 
         public Lift(int id, string zone, float bottom_altitude, float top_altitude, LiftType liftType, float length, float rideTime, int throughput, TimeSpan openingTime, TimeSpan closingTime)
         {
@@ -57,6 +60,9 @@ namespace ConsoleApp1
             currentUsers = 0;
 
             liftToSlopes = new List<Slope>();
+            liftQueue = new Queue<Skier>();
+
+            usageCount = 0;
         }
 
         public static LiftType GetLiftType(String str)
@@ -76,6 +82,23 @@ namespace ConsoleApp1
         public override string ToString()
         {
             return "Lift:{ " + Id.ToString() + " " + Zone + " " + Bottom_altitude.ToString() + " " + Top_altitude.ToString() + " " + LiftType1.ToString() + " " + Length.ToString() + " " + RideTime.ToString() + " " + throughput.ToString() + " " + openingTime.ToString() + " " + closingTime.ToString() + " }";
+        }
+
+        public void LiftTick(float delta)
+        {
+            if (Resort.CurrentTime.TimeOfDay <= closingTime)
+            {
+                int lifters = (int)Math.Ceiling(throughput / 3600.0f * delta);
+                for (int i = 0; i < lifters && i < liftQueue.Count(); i++)
+                {
+                    Skier s = liftQueue.Dequeue();
+                    s.CurrentLift = s.NextLift;
+                    s.chooseFromSlopes(s.CurrentLift.liftToSlopes);
+                    s.state = Skier.State.ascending;
+                    usageCount++;
+                    //Console.WriteLine("Skier no. " + s.Id + " is now using lift no. " + Id + " at time " + Resort.CurrentTime.TimeOfDay);
+                }
+            }
         }
 
         public string GetSlopesStr(int depth)
