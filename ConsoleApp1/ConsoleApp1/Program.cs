@@ -144,23 +144,25 @@ namespace ConsoleApp1
 
         static void Simulate(int seasons, SkiResort resort, float tickLength)
         {
-            resort.GenerateCustomers(new Random().Next(10000, 25001));
+            Random rand = new Random();
+            resort.GenerateCustomers(rand.Next(20000, 25001));
             
             for (int j = 0; j < seasons; j++)
             {
                 resort.CurrentTime = new DateTime(2017, 11, 15, 7, 0, 0).AddYears(j);
                 //todo generate skipassed and set date for new opening
+                resort.GeneratePasses(rand.Next(7500, 12500), resort.CurrentTime.Year);
 
                 for (int k = 0; k < 120; k++)
                 {
                     resort.ResetSkiers();
-                    resort.spawnNewSkiers(new Random().Next(100, 1001));
+                    resort.spawnNewSkiers();
 
                     for (int i = 0; i < 660; i++)
                     {
                         resort.tick(tickLength);
                     }
-                    resort.CurrentTime.AddHours(13);
+                    resort.CurrentTime = resort.CurrentTime.AddHours(13);
                 }
             }
             Console.WriteLine("done");

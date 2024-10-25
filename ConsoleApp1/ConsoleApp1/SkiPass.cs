@@ -9,23 +9,17 @@ namespace ConsoleApp1
     internal class SkiPass
     {
         int id;
-        DateTime dateOfIssue;
-        DateTime expirationDate;
-        int zones;
-        int duration;
+        public DateTime dateOfIssue;
+        public DateTime expirationDate;
+        public int zones;
+        public int duration;
         double price;
 
-        public SkiPass(int id, Random random)
-        {
-            this.id = id;
-
-        }
-
-        public SkiPass(int id, DateTime dateOfIssue, DateTime expirationDate, int zones, int duration)
+        public SkiPass(int id, DateTime dateOfIssue,  int zones, int duration)
         {
             this.id = id;
             this.dateOfIssue = dateOfIssue;
-            this.expirationDate = expirationDate;
+            this.expirationDate = dateOfIssue.AddDays(duration - 1).AddHours(23).AddMinutes(59).AddSeconds(59);
             this.zones = zones;
             this.duration = duration;
             int i, j;

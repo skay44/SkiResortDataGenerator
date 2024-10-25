@@ -34,9 +34,9 @@ namespace ConsoleApp1
         Slope nextSlope;
         Lift nextLift;
         float NextAltitude;
-        int id;
+        Person person;
+        SkiPass pass;
 
-        public int Id { get => id; }
         internal Slope CurrentSlope { get => currentSlope; set { 
                 currentSlope = value;
                 currentLift = null;
@@ -72,13 +72,15 @@ namespace ConsoleApp1
             }
         }
 
-        public Skier(Village village, float height, Random rand, int id)
+        public Person Person { get => person; set => person = value; }
+        public SkiPass Pass { get => pass; set => pass = value; }
+
+        public Skier(Village village, float height, Random rand)
         {
             this.CurrentVillage = village;
             this.height = height;
             this.state = State.idle;
             rnd = rand;
-            this.id = id;
         }
 
         void tryGettingOnTheLift(Lift lift)
