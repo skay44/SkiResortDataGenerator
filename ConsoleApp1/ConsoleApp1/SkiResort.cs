@@ -20,7 +20,14 @@ namespace ConsoleApp1
         Random random;
         DateTime currentTime;
 
+        public Dictionary<Lift, List<MaintenanceData>> maintenances;
+        public Dictionary<Lift, List<RepairData>> repairs;
+
         List<Person> customers;
+        int skiPassIds;
+        int skiLiftUsafeNumber;
+        int maintenanceID;
+        int repairID;
 
         public SkiResort()
         {
@@ -33,10 +40,29 @@ namespace ConsoleApp1
             skiers = new List<Skier>();
             random = new Random();
             currentTime = new DateTime(2017, 11, 15, 7, 0, 0);
+
+            maintenances = new Dictionary<Lift, List<MaintenanceData>>();
+            repairs = new Dictionary<Lift, List<RepairData>>();
+
             customers = new List<Person>();
+            skiPassIds = 0;
+            skiLiftUsafeNumber = 0;
+            maintenanceID = 0;
+            repairID = 0;
         }
 
         public DateTime CurrentTime { get => currentTime; set => currentTime = value; }
+
+
+        public void generateDictionaries()
+        {
+            foreach(Lift lift in lifts)
+            {
+                maintenances[lift] = new List<MaintenanceData>();
+                repairs[lift] = new List<RepairData>();
+            }
+        }
+
         public void ApplyConnections()
         {
             foreach(LiftToSlope LTS in liftToSlopes)
@@ -300,27 +326,32 @@ namespace ConsoleApp1
             WriteAllVillages(depth + 1);
         }
 
-        public void GenerateCustomers(float delta)
+        public String GenerateCustomers(float delta)
         {
+            String customersCSV = "";
             for (int i = 0; i < delta; i++)
             {
                 Person s = new Person(i, random);
                 customers.Add(s);
-                //Console.WriteLine(s.name + " " + s.surname + " from " + s.countryOfOrigin + " was born in " + s.dateOfBirth);
+                customersCSV += s.Id + "," + s.name + "," + s.surname + "," + s.dateOfBirth + "," + s.countryOfOrigin + "\r\n";
             }
+            return customersCSV;
         }
 
-        public void GeneratePasses(float number, int year)
+        public String GeneratePasses(float number, int year)
         {
+            String passesCSV = "";
             for (int i = 0; i < number; i++)
             {
                 int duration = GenerateDuration();
                 DateTime startDate = new DateTime(year, 11, 15).AddDays(random.Next(0, 120 - duration + 1));
                 
                 int zones = GenerateZones();
-                SkiPass s = new SkiPass(i, startDate, zones, duration);
+                SkiPass s = new SkiPass(skiPassIds, startDate, zones, duration);
+                skiPassIds++;
 
                 bool valid = false;
+                //cursed!
                 while(!valid)
                 {
                     int r = random.Next(0, customers.Count);
@@ -335,10 +366,142 @@ namespace ConsoleApp1
                     if (b == true)
                     {
                         customers[r].passList.Add(s);
+                        passesCSV += s.id + "," + s.dateOfIssue + "," + s.expirationDate + "," + s.zones + "," + s.price + "," + customers[r].Id + "\r\n";
                         valid = true;
                     }
                 }
             }
+            return passesCSV;
+        }
+
+        public String GenerateMaintenance(float number, int year)
+        {
+            String maintenanceSTR = "";
+            for(int i = 0; i < number; i++)
+            {
+                int duration = random.Next(15, 100);
+                DateTime dateOfMaintenance = new DateTime(year, 11, 15).AddDays(random.Next(0, 120 - duration + 1));
+                TimeSpan timeOfMaintenance = new TimeSpan(random.Next(0, 23), random.Next(0, 60), random.Next(0, 60));
+                TimeSpan endOfMaintenance = timeOfMaintenance.Add(TimeSpan.FromMinutes(duration));
+                int liftID = random.Next(1,lifts.Count);
+                Lift currentLift = null;
+                foreach(Lift l in lifts)
+                {
+                    if(l.Id == liftID)
+                    {
+                        currentLift = l; 
+                        break;
+                    }
+                }
+                int liftDowntime;
+                if(currentLift.openingTime > timeOfMaintenance)
+                {
+                    if(currentLift.openingTime > endOfMaintenance)
+                    {
+                        liftDowntime = 0;
+                    }
+                    else if(currentLift.closingTime < endOfMaintenance)
+                    {
+                        liftDowntime = (endOfMaintenance - currentLift.openingTime).Minutes;
+                    }
+                    else
+                    {
+                        liftDowntime = duration;
+                    }
+                }
+                else if(currentLift.openingTime < timeOfMaintenance && currentLift.closingTime > timeOfMaintenance)
+                {
+                    if(currentLift.closingTime > endOfMaintenance)
+                    {
+                        liftDowntime = duration;
+                    }
+                    else
+                    {
+                        liftDowntime = (currentLift.closingTime - timeOfMaintenance).Minutes; 
+                    }
+                }
+                else
+                {
+                    liftDowntime = 0;
+                }
+                bool coveredOperatingHours = false;
+                if(liftDowntime > 0)
+                {
+                    coveredOperatingHours = true;
+                }
+                String maintenanceFindings = MaintenanceData.maintenanceFindings[random.Next(0, MaintenanceData.maintenanceFindings.Length)];
+
+                MaintenanceData maintenanceData = new MaintenanceData(maintenanceID, dateOfMaintenance, timeOfMaintenance, duration, liftDowntime, coveredOperatingHours, maintenanceFindings, currentLift.Id, currentLift);
+                maintenances[currentLift].Add(maintenanceData);
+                maintenanceSTR += maintenanceID + "," + dateOfMaintenance + "," + timeOfMaintenance + "," + duration + "," + liftDowntime + "," + coveredOperatingHours + "," + maintenanceFindings + "," + currentLift.Id + "\r\n";
+            }
+            return maintenanceSTR;
+        }
+
+        public String GenerateRepairs(float number, int year)
+        {
+            String repairSTR = "";
+            for (int i = 0; i < number; i++)
+            {
+                int duration = random.Next(15, 100);
+                DateTime dateOfRepair = new DateTime(year, 11, 15).AddDays(random.Next(0, 120 - duration + 1));
+                TimeSpan timeOfRepair = new TimeSpan(random.Next(0, 23), random.Next(0, 60), random.Next(0, 60));
+                TimeSpan endOfRepair = timeOfRepair.Add(TimeSpan.FromMinutes(duration));
+                int liftID = random.Next(1, lifts.Count);
+                Lift currentLift = null;
+                foreach (Lift l in lifts)
+                {
+                    if (l.Id == liftID)
+                    {
+                        currentLift = l;
+                        break;
+                    }
+                }
+                int liftDowntime;
+                if (currentLift.openingTime > timeOfRepair)
+                {
+                    if (currentLift.openingTime > endOfRepair)
+                    {
+                        liftDowntime = 0;
+                    }
+                    else if (currentLift.closingTime < endOfRepair)
+                    {
+                        liftDowntime = (endOfRepair - currentLift.openingTime).Minutes;
+                    }
+                    else
+                    {
+                        liftDowntime = duration;
+                    }
+                }
+                else if (currentLift.openingTime < timeOfRepair && currentLift.closingTime > timeOfRepair)
+                {
+                    if (currentLift.closingTime > endOfRepair)
+                    {
+                        liftDowntime = duration;
+                    }
+                    else
+                    {
+                        liftDowntime = (currentLift.closingTime - timeOfRepair).Minutes;
+                    }
+                }
+                else
+                {
+                    liftDowntime = 0;
+                }
+                bool coveredOperatingHours = false;
+                if (liftDowntime > 0)
+                {
+                    coveredOperatingHours = true;
+                }
+                int id = random.Next(0, RepairData.repairFindingsWithCosts.Length);
+                String repairDescription = RepairData.repairFindingsWithCosts[id].Item1;
+                int cost = random.Next(RepairData.repairFindingsWithCosts[id].Item2, RepairData.repairFindingsWithCosts[id].Item3);
+
+                RepairData repairData = new RepairData(maintenanceID, dateOfRepair, timeOfRepair, duration, liftDowntime, coveredOperatingHours, repairDescription, cost, currentLift.Id, currentLift);
+                repairs[currentLift].Add(repairData);
+                repairSTR += maintenanceID + "," + dateOfRepair + "," + timeOfRepair + "," + duration + "," + liftDowntime + "," + coveredOperatingHours + "," + repairDescription + "," + cost + "," + currentLift.Id + "\r\n";
+            }
+            return repairSTR;
         }
 
         public int GenerateDuration()
@@ -415,16 +578,15 @@ namespace ConsoleApp1
             skiers.Clear();
         }
 
-        public void tick(float delta)
+        public void tick(float delta,ref string skiLiftUseCSV)
         {
-            
-            foreach(Skier skier in skiers)
+            foreach (Skier skier in skiers)
             {
                 skier.tick(delta);
             }
             foreach(Lift lift in lifts)
             {
-                lift.LiftTick(delta);
+                lift.LiftTick(delta, ref skiLiftUseCSV, currentTime,ref skiLiftUsafeNumber);
             }
             currentTime = currentTime.AddSeconds(delta);
         }

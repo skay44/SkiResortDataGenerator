@@ -5,12 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Data.SqlClient;
 using System.Xml.Serialization;
+using System.IO;
 
 namespace ConsoleApp1
 {
     internal class Program
     {
-
         static SqlDataReader ReadTableFormDB(SqlConnection connection, string tableName)
         {
             String str;
@@ -145,31 +145,59 @@ namespace ConsoleApp1
         static void Simulate(int seasons, SkiResort resort, float tickLength)
         {
             Random rand = new Random();
-            resort.GenerateCustomers(rand.Next(20000, 25001));
-            
+
+            String customersCSV = "id,Name,Surname,Date_of_birth,Country_of_Origin\r\n";
+            String passesCSV = "Issue_number,date_of_issue,Expiration_date,Availeble_zones,Price,Owner\r\n";
+
+            string filePath = "E:\\STUDIA\\SEMESTR 5\\Hurtownie danych\\Laby\\Task2";
+
+            File.WriteAllText(filePath + "\\skiLiftUsages.csv", "id,scan_date,scan_time,Lift,Ski_Pass,Lift,Ski_Pass\r\n");
+            File.WriteAllText(filePath + "\\maintenance.csv", "id,date_of_maintenance,Time_of_Maintenance,Maintenance_time,Lift_Downtime,Covered_Operating_Hours,Findings,Lift\r\n");
+
+            File.WriteAllText(filePath + "\\repairs.csv", "id,date_of_repair,Time_of_Repair,Repair_time,Lift_Downtime,Covered_Operating_Hours,Repairs,Additional_Costs,Lift\r\n");
+
+            customersCSV += resort.GenerateCustomers(rand.Next(20000, 25001));
+
             for (int j = 0; j < seasons; j++)
             {
                 resort.CurrentTime = new DateTime(2017, 11, 15, 7, 0, 0).AddYears(j);
                 //todo generate skipassed and set date for new opening
-                resort.GeneratePasses(rand.Next(7500, 12500), resort.CurrentTime.Year);
+                passesCSV += resort.GeneratePasses(rand.Next(7500, 12500), resort.CurrentTime.Year);
 
-                for (int k = 0; k < 120; k++)
+                String maintenanceCSV = "";
+                maintenanceCSV = resort.GenerateMaintenance(rand.Next(50, 200), resort.CurrentTime.Year);
+                File.AppendAllText(filePath + "\\maintenance.csv", maintenanceCSV);
+
+                String repairCSV = "";
+                repairCSV = resort.GenerateRepairs(rand.Next(50, 200), resort.CurrentTime.Year);
+                File.AppendAllText(filePath + "\\repairs.csv", repairCSV);
+
+                for (int k = 0; k < 120; k++) //120
                 {
+                    Console.WriteLine("season: " + j + " day: " + k);
                     resort.ResetSkiers();
                     resort.spawnNewSkiers();
 
-                    for (int i = 0; i < 660; i++)
+                    for (int i = 0; i < 660; i++) //660
                     {
-                        resort.tick(tickLength);
+                        String skiLiftUseCSV = "";
+                        resort.tick(tickLength,ref skiLiftUseCSV);
+                        File.AppendAllText(filePath + "\\skiLiftUsages.csv", skiLiftUseCSV);
                     }
                     resort.CurrentTime = resort.CurrentTime.AddHours(13);
                 }
+                
             }
             long count = 0;
             foreach (Lift lift in resort.lifts)
             {
                 count += lift.usageCount;
             }
+
+            File.WriteAllText(filePath + "\\Customers.csv", customersCSV);
+            File.WriteAllText(filePath + "\\passesCSV.csv", passesCSV);
+
+
             Console.WriteLine("total inserts to usage table: " + count);
         }
 
@@ -177,7 +205,7 @@ namespace ConsoleApp1
         {
             SkiResort skissueSkiResort;
             skissueSkiResort = new SkiResort();
-            SqlConnection myConn = new SqlConnection("Server=EPICGAMERPUTER;Integrated security=SSPI;database=wyciagi_stoki");
+            SqlConnection myConn = new SqlConnection("Server=DESKTOP-A2OQMJO;Integrated security=SSPI;database=wyciagi_stoki");
             
             ReadLifts(myConn, skissueSkiResort);
             ReadSlopes(myConn, skissueSkiResort);
@@ -186,6 +214,7 @@ namespace ConsoleApp1
             ReadSlopeToSlope(myConn, skissueSkiResort);
 
             skissueSkiResort.ApplyConnections();
+            skissueSkiResort.generateDictionaries();
 
             AddVillages(skissueSkiResort);
 

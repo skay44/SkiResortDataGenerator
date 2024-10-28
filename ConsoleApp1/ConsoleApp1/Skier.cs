@@ -35,7 +35,7 @@ namespace ConsoleApp1
         Lift nextLift;
         float NextAltitude;
         Person person;
-        SkiPass pass;
+        public SkiPass pass;
 
         internal Slope CurrentSlope { get => currentSlope; set { 
                 currentSlope = value;
@@ -85,20 +85,21 @@ namespace ConsoleApp1
 
         void tryGettingOnTheLift(Lift lift)
         {
-            if(lift.currentUsers >= lift.throughput)
-            {
+            //if(lift.currentUsers >= lift.throughput)
+            //{
                 this.state = State.waiting;
                 lift.liftQueue.Enqueue(this);
-            }
-            this.state = State.ascending;
+            //}
+            //this.state = State.ascending;
         }
 
         void chooseFromVillage(Village village) {
             int options = village.lifts.Length;
             int random = rnd.Next(options);
-            CurrentLift = village.lifts[random];
-            chooseFromSlopes(CurrentLift.liftToSlopes);
-            tryGettingOnTheLift(CurrentLift);
+            NextLift = village.lifts[random];
+            //chooseFromSlopes(CurrentLift.liftToSlopes);
+            this.state = State.waiting;
+            NextLift.liftQueue.Enqueue(this);
         }
 
         void chooseFromSlopes(List<Slope> slopes, List<float> altitude) //for slopes
@@ -251,7 +252,17 @@ namespace ConsoleApp1
         {
             if(CurrentLift != null)
             {
-                float liftSpeed = CurrentLift.Length / CurrentLift.RideTime;
+                float multiplier = 1;
+                if (CurrentLift.ISMAINTENANCERN)
+                {
+                    multiplier *= 0.8f;
+                }
+                if (CurrentLift.ISREPAIREDRN)
+                {
+                    multiplier *= 0.4f;
+                }
+
+                float liftSpeed = (CurrentLift.Length / CurrentLift.RideTime) * multiplier;
                 height += liftSpeed * delta;
                 if(height >= CurrentLift.Top_altitude)
                 {

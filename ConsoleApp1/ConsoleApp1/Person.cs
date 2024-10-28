@@ -8,7 +8,7 @@ namespace ConsoleApp1
 {
     internal class Person
     {
-        int Id;
+        public int Id;
         public string name; 
         public string surname;
         public string countryOfOrigin;

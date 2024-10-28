@@ -8,12 +8,12 @@ namespace ConsoleApp1
 {
     internal class SkiPass
     {
-        int id;
+        public int id;
         public DateTime dateOfIssue;
         public DateTime expirationDate;
         public int zones;
         public int duration;
-        double price;
+        public double price;
 
         public SkiPass(int id, DateTime dateOfIssue,  int zones, int duration)
         {

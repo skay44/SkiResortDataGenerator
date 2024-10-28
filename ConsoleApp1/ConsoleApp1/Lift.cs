@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -25,9 +26,12 @@ namespace ConsoleApp1
         float length;
         float rideTime;
         public int throughput;
-        TimeSpan openingTime;
-        TimeSpan closingTime;
+        public TimeSpan openingTime;
+        public TimeSpan closingTime;
         SkiResort resort;
+
+        public bool ISMAINTENANCERN;
+        public bool ISREPAIREDRN;
 
         public int currentUsers;
 
@@ -84,16 +88,48 @@ namespace ConsoleApp1
             return "Lift:{ " + Id.ToString() + " " + Zone + " " + Bottom_altitude.ToString() + " " + Top_altitude.ToString() + " " + LiftType1.ToString() + " " + Length.ToString() + " " + RideTime.ToString() + " " + throughput.ToString() + " " + openingTime.ToString() + " " + closingTime.ToString() + " }";
         }
 
-        public void LiftTick(float delta)
+        public void LiftTick(float delta, ref string skiLiftUseCSV, DateTime currentTime, ref int skiLiftUsafeNumber)
         {
             if (Resort.CurrentTime.TimeOfDay <= closingTime)
             {
+                ISMAINTENANCERN = false;
+                if (Resort.maintenances[this].Count > 0)
+                {
+                    foreach(MaintenanceData md in Resort.maintenances[this])
+                    {
+                        if(md.DateOfMaintenance + md.TimeOfMaintenance < currentTime &&
+                            md.DateOfMaintenance + md.TimeOfMaintenance + TimeSpan.FromMinutes(md.MaintenanceTime) > currentTime
+                            )
+                        {
+                            ISMAINTENANCERN = true;
+                            break;
+                        }
+                    }
+                }
+                ISREPAIREDRN = false;
+                if (Resort.repairs[this].Count > 0)
+                {
+                    foreach (RepairData md in Resort.repairs[this])
+                    {
+                        if (md.DateOfRepair + md.TimeOfRepair < currentTime &&
+                            md.DateOfRepair + md.TimeOfRepair + TimeSpan.FromMinutes(md.RepairTime) > currentTime
+                            )
+                        {
+                            ISREPAIREDRN = true;
+                            break;
+                        }
+                    }
+                }
+
                 int lifters = (int)Math.Ceiling(throughput / 3600.0f * delta);
                 for (int i = 0; i < lifters && i < liftQueue.Count(); i++)
                 {
                     Skier s = liftQueue.Dequeue();
                     s.CurrentLift = s.NextLift;
                     s.chooseFromSlopes(s.CurrentLift.liftToSlopes);
+                    skiLiftUseCSV += skiLiftUsafeNumber + ","+ currentTime.Date.ToString() + "," + currentTime.TimeOfDay + "," + this.id + "," + s.pass.id +"\r\n";
+
+                    skiLiftUsafeNumber++;
                     s.state = Skier.State.ascending;
                     usageCount++;
                     //Console.WriteLine("Skier no. " + s.Id + " is now using lift no. " + Id + " at time " + Resort.CurrentTime.TimeOfDay);
