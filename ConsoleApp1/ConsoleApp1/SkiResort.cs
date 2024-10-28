@@ -425,15 +425,18 @@ namespace ConsoleApp1
                     liftDowntime = 0;
                 }
                 bool coveredOperatingHours = false;
+                int coveredOperationgHoursInt = 0;
                 if(liftDowntime > 0)
                 {
                     coveredOperatingHours = true;
+                    coveredOperationgHoursInt = 1;
                 }
                 String maintenanceFindings = MaintenanceData.maintenanceFindings[random.Next(0, MaintenanceData.maintenanceFindings.Length)];
 
                 MaintenanceData maintenanceData = new MaintenanceData(maintenanceID, dateOfMaintenance, timeOfMaintenance, duration, liftDowntime, coveredOperatingHours, maintenanceFindings, currentLift.Id, currentLift);
                 maintenances[currentLift].Add(maintenanceData);
-                maintenanceSTR += maintenanceID + "," + dateOfMaintenance + "," + timeOfMaintenance + "," + duration + "," + liftDowntime + "," + coveredOperatingHours + "," + maintenanceFindings + "," + currentLift.Id + "\r\n";
+                maintenanceSTR += maintenanceID + "," + dateOfMaintenance + "," + timeOfMaintenance + "," + duration + "," + liftDowntime + "," + coveredOperationgHoursInt + "," + maintenanceFindings + "," + currentLift.Id + "\r\n";
+                maintenanceID++;
             }
             return maintenanceSTR;
         }
@@ -489,9 +492,11 @@ namespace ConsoleApp1
                     liftDowntime = 0;
                 }
                 bool coveredOperatingHours = false;
+                int coveredOperationgHoursInt = 0;
                 if (liftDowntime > 0)
                 {
                     coveredOperatingHours = true;
+                    coveredOperationgHoursInt = 1;
                 }
                 int id = random.Next(0, RepairData.repairFindingsWithCosts.Length);
                 String repairDescription = RepairData.repairFindingsWithCosts[id].Item1;
@@ -499,7 +504,8 @@ namespace ConsoleApp1
 
                 RepairData repairData = new RepairData(maintenanceID, dateOfRepair, timeOfRepair, duration, liftDowntime, coveredOperatingHours, repairDescription, cost, currentLift.Id, currentLift);
                 repairs[currentLift].Add(repairData);
-                repairSTR += maintenanceID + "," + dateOfRepair + "," + timeOfRepair + "," + duration + "," + liftDowntime + "," + coveredOperatingHours + "," + repairDescription + "," + cost + "," + currentLift.Id + "\r\n";
+                repairSTR += repairID + "," + dateOfRepair + "," + timeOfRepair + "," + duration + "," + liftDowntime + "," + coveredOperationgHoursInt + "," + repairDescription + "," + cost + "," + currentLift.Id + "\r\n";
+                repairID++;
             }
             return repairSTR;
         }
